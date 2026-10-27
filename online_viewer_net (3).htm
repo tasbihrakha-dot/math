@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض تقديمي: الأسس واللوغاريتميات الطبيعية</title>
+    <!-- MathJax for crystal clear math rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-main: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --primary: #1E3A8A;
+            --primary-light: #3B82F6;
+            --accent: #059669;
+            --danger: #DC2626;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Presentation Container */
+        .presentation-container {
+            width: 100%;
+            max-width: 1000px;
+            height: 650px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Top Progress Bar */
+        .progress-container {
+            height: 6px;
+            width: 100%;
+            background: #E2E8F0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 5.55%;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
+            transition: width 0.3s ease;
+        }
+
+        /* Header Slide Title */
+        .slide-header {
+            padding: 20px 30px 10px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .slide-header h2 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slide-number {
+            font-size: 0.9rem;
+            background: #EFF6FF;
+            color: var(--primary-light);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* Slide Content Area */
+        .slide-body {
+            padding: 20px 40px;
+            flex-grow: 1;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            animation: fadeIn 0.4s ease-in-out;
+            overflow-y: auto;
+        }
+
+        .slide-body.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Typography & Components */
+        p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #334155;
+            margin-bottom: 12px;
+        }
+
+        .highlight-box {
+            background: #EFF6FF;
+            border-right: 5px solid var(--primary-light);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 1.1rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            align-items: center;
+        }
+
+        ul.styled-list {
+            list-style: none;
+        }
+
+        ul.styled-list li {
+            position: relative;
+            padding-right: 25px;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+        }
+
+        ul.styled-list li::before {
+            content: "✦";
+            position: absolute;
+            right: 0;
+            color: var(--primary-light);
+            font-size: 1.2rem;
+        }
+
+        /* Interactive Canvas / Graphs */
+        .graph-wrapper {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+        }
+
+        canvas {
+            background: #FFFFFF;
+            border-radius: 8px;
+        }
+
+        .controls-panel {
+            margin-top: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        /* Navigation Controls */
+        .footer-nav {
+            padding: 15px 30px;
+            background: #F8FAFC;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: #CBD5E1;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Tables */
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        table.data-table th, table.data-table td {
+            padding: 10px 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        table.data-table th {
+            background: #F1F5F9;
+            color: var(--primary);
+        }
+
+        /* Title Slide Custom Styling */
+        .title-slide {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .title-slide h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .title-slide h3 {
+            font-size: 1.4rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-bottom: 30px;
+        }
+
+        .title-card {
+            display: inline-block;
+            background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 1.8rem;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.25);
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation-container">
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Slide Header -->
+    <div class="slide-header">
+        <h2 id="slideTitle">الوحدة الأولى: الأسس واللوغاريتميات الطبيعية</h2>
+        <span class="slide-number" id="slideNum">1 / 18</span>
+    </div>
+
+    <!-- SLIDE 1: Title Slide -->
+    <div class="slide-body active title-slide" data-title="العنوان الرئيسي">
+        <h3>الصف الثاني عشر - الرياضيات الأساسية</h3>
+        <h1>الوحدة الأولى: الأسس واللوغاريتميات الطبيعية</h1>
+        <div style="margin: 30px 0;">
+            <div class="title-card">الدوال الأسية الطبيعية \(e^x\) والتمثيلات البيانية</div>
+        </div>
+        <p style="color: var(--text-muted);">عرض تعليمي بصري وتفاعلي مُفصّل</p>
+    </div>
+
+    <!-- SLIDE 2: What is 'e'? -->
+    <div class="slide-body" data-title="أولًا: ما هو العدد e؟">
+        <div class="grid-2">
+            <div>
+                <p>العدد <strong>\(e\)</strong> (عدد أويلر) هو أحد أهم الثوابت الرياضية في العالم، وقيمته غير النسبية التقريبية هي:</p>
+                <div class="highlight-box" style="text-align: center; font-size: 1.5rem; color: var(--primary);">
+                    \(e \approx 2.71828\)
+                </div>
+                <p>يظهر بصورة أساسية في النمذجة الطبيعية والنمو الأسّي واللوغاريتمات الطبيعية.</p>
+            </div>
+            <div>
+                <div class="highlight-box" style="background: #F0FDF4; border-color: var(--accent);">
+                    <h4 style="color: var(--accent); margin-bottom: 10px;">أمثلة على قيم أسية للعدد \(e\):</h4>
+                    <ul class="styled-list">
+                        <li>\(e^2 \approx 7.389\)</li>
+                        <li>\(e^{0.8} \approx 2.226\)</li>
+                        <li>\(e^{2.7} \approx 14.880\)</li>
+                        <li>\(e^{2/3} \approx 1.948\)</li>
+                    </ul>
+                    <small>يمكن استخدام الحاسبة عبر المفتاح <code>e^x</code> لحسابها بدقة.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: The Exponential Function e^x -->
+    <div class="slide-body" data-title="ثانيًا: الدالة الأسية الطبيعية y = e^x">
+        <p>الصورة الأساسية للدالة الأسية الطبيعية هي: <strong style="font-size: 1.3rem; color: var(--primary);">\(y = e^x\)</strong></p>
+        <div class="grid-2" style="margin-top: 15px;">
+            <div class="highlight-box">
+                <h4 style="color: var(--primary); margin-bottom: 10px;">خصائص الدالة الرئيسية:</h4>
+                <ul class="styled-list">
+                    <li><strong>المجال:</strong> جميع الأعداد الحقيقية \((-\infty, \infty)\)</li>
+                    <li><strong>المدى:</strong> الأعداد الحقيقية الموجبة فقط \((y > 0)\)</li>
+                    <li><strong>نقطة التقاطع:</strong> تقطع محور الصادات عند \((0, 1)\) لأن \(e^0 = 1\)</li>
+                    <li><strong>السلوك:</strong> دالة متزايدة باستمرار من اليسار إلى اليمين.</li>
+                    <li><strong>خط التقارب:</strong> تقترب من محور السينات \(y = 0\) دون أن تلمسه.</li>
+                </ul>
+            </div>
+            <div style="text-align: center; padding: 20px; background: #F8FAFC; border-radius: 12px; border: 1px solid var(--border-color);">
+                <h3 style="color: var(--accent); font-size: 2rem;">\(y > 0\)</h3>
+                <p>المنحنى يقع بالكامل فوق المحور السيني، ولا يقطع المحور السيني أبداً.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: Detailed Interactive Graph y=e^x -->
+    <div class="slide-body" data-title="ثالثًا: الرسم البياني المفصل للدالة y = e^x">
+        <div class="grid-2">
+            <div>
+                <p>لاحظ شكل منحنى النمو الأسّي المفصل وقيم النقاط الرئيسية:</p>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>\(x\)</th><th>\(e^x\) (تقريبًا)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>-2</td><td>0.135</td></tr>
+                        <tr><td>-1</td><td>0.368</td></tr>
+                        <tr><td><strong>0</strong></td><td><strong>1.000</strong></td></tr>
+                        <tr><td>1</td><td>2.718</td></tr>
+                        <tr><td>2</td><td>7.389</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="graph-wrapper">
+                <canvas id="graphEx" width="380" height="260"></canvas>
+                <div class="controls-panel">
+                    <label>حرك قيمة \(x\): </label>
+                    <input type="range" id="sliderX" min="-2" max="2" step="0.1" value="1">
+                    <span id="valX" style="font-weight:bold; color:var(--primary);">x = 1.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: Estimating values from Graph -->
+    <div class="slide-body" data-title="رابعًا: تقدير القيم باستخدام المنحنى البياني">
+        <p>يمكن التقدير من الرسم مباشرة دون استخدام الحاسبة باتباع الخطوات التالية:</p>
+        <div class="grid-2" style="margin-top: 15px;">
+            <div class="highlight-box">
+                <h4 style="color: var(--primary);">خطوات التقدير:</h4>
+                <ol style="margin-right: 20px; line-height: 2;">
+                    <li>حدد قيمة \(x\) المطلوبة على المحور الأفقي.</li>
+                    <li>اصعد بخط رأسي حتى تتقاطع مع المنحنى.</li>
+                    <li>اتجه بخط أفقي نحو المحور الصادي \(y\).</li>
+                    <li>اقرأ القيمة التقديرية.</li>
+                </ol>
+            </div>
+            <div class="highlight-box" style="background: #FFFBEB; border-color: #F59E0B;">
+                <h4 style="color: #D97706;">مثال تطبيقي:</h4>
+                <p>لتقدير قيمة <strong>\(e^{0.6}\)</strong>:</p>
+                <p>نبدأ من \(x = 0.6\) ⬅️ نرتفع للمنحنى ⬅️ نتجه صاديًا لنقرأ الناتج التقريبي <strong>\(y \approx 1.82\)</strong>.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: General Exponential Form y = a e^(bx) -->
+    <div class="slide-body" data-title="خامسًا: الصورة العامة للدالة الأسية y = a e^(bx)">
+        <p>تظهر الدالة الأسية غالباً في الصورة الممتدة: <strong style="font-size: 1.3rem; color: var(--primary);">\(y = a e^{bx}\)</strong></p>
+        <div class="grid-2" style="margin-top: 20px;">
+            <div class="highlight-box">
+                <h4 style="color: var(--primary);">تأثير المعاملات:</h4>
+                <ul class="styled-list">
+                    <li><strong>المعامل \(a\):</strong> يمثل الجزء المقطوع من محور الصادات عند \(x = 0\) (حيث \(y = a e^0 = a\)).</li>
+                    <li><strong>المعامل \(b\):</strong> يتحكم في سرعة النمو أو التناقص:
+                        <br>• إذا كان \(b > 0\): تزايد نمو أسّي.
+                        <br>• إذا كان \(b < 0\): تناقص أسّي.
+                    </li>
+                </ul>
+            </div>
+            <div style="background: #F1F5F9; padding: 20px; border-radius: 12px; text-align: center;">
+                <p style="font-weight: bold; color: var(--primary);">مقارنة التأثير:</p>
+                <p style="margin-top: 10px;">\(y = 3e^{2x}\) تتزايد بمعدل أسرع بكثير من \(y = e^x\)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: Detailed Example y = 3e^(2x) Graph -->
+    <div class="slide-body" data-title="سادساً: رسم بياني تفاعلي للدالة y = 3e^(2x)">
+        <div class="grid-2">
+            <div>
+                <div class="highlight-box">
+                    <h4 style="color: var(--primary);">مثال الكتاب: \(y = 3e^{2x}\)</h4>
+                    <p>عند \(x = 0.25\):</p>
+                    <p>نرسم خطاً رأسياً من \(x = 0.25\) للمنحنى، ثم خطاً أفقياً لنقرأ قيمة \(y\):</p>
+                    <p style="font-size: 1.2rem; color: var(--accent); font-weight: bold;">\(y = 3e^{2(0.25)} = 3e^{0.5} \approx 4.95\)</p>
+                </div>
+            </div>
+            <div class="graph-wrapper">
+                <canvas id="graph3e2x" width="380" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: Reading x from y value -->
+    <div class="slide-body" data-title="سابعًا: تحديد قيمة x عندما تكون y معروفة">
+        <p>كيف نجد \(x\) إذا علمت قيمة \(y\)? (العكس)</p>
+        <div class="grid-2" style="margin-top: 15px;">
+            <div class="highlight-box">
+                <h4 style="color: var(--primary);">مثال: حدد \(x\) عندما تكون \(y = 20\) في الدالة \(y = 3e^{2x}\)</h4>
+                <ol style="margin-right: 20px; line-height: 2;">
+                    <li>حدد القيمة \(20\) على محور الصادات \(y\).</li>
+                    <li>تحرك بخط أفقي يميناً حتى تتقاطع مع المنحنى.</li>
+                    <li>انزل بخط رأسي باتجاه المحور السيني \(x\).</li>
+                    <li>القيمة الناتجة تكون تقريباً: <strong style="color: var(--danger); font-size: 1.2rem;">\(x \approx 0.95\)</strong></li>
+                </ol>
+            </div>
+            <div style="background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 12px; padding: 20px; text-align: center;">
+                <h4 style="color: var(--danger);">الخطوات البصرية:</h4>
+                <p style="margin-top: 15px; font-weight: bold;">\(y = 20\) ➡️ المنحنى ⬇️ \(x \approx 0.95\)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: Calculator Rules & Rounding -->
+    <div class="slide-body" data-title="ثامنًا: الحساب والتقريب باستخدام الحاسبة">
+        <p>عند إيجاد قيم الأسس الطبيعية باستخدام الحاسبة، اتبع الخطوات التالية:</p>
+        <div class="grid-2" style="margin-top: 15px;">
+            <div class="highlight-box">
+                <h4 style="color: var(--primary);">أزرار الحاسبة:</h4>
+                <p>استخدم المفاتيح <code>SHIFT</code> + <code>ln</code> أو المفتاح المخصص <code>e^x</code>.</p>
+                <p style="margin-top: 10px;">أمثلة للتقريب لأقرب 3 منازل عشرية:</p>
+                <ul class="styled-list">
+                    <li>\(e^{2.7} \approx 14.880\)</li>
+                    <li>\(e^{-0.3} \approx 0.741\)</li>
+                    <li>\(e^{2/3} \approx 1.948\)</li>
+                </ul>
+            </div>
+            <div class="highlight-box" style="background: #F0FDF4; border-color: var(--accent);">
+                <h4 style="color: var(--accent);">تنبيه هائم للتقريب:</h4>
+                <p>انظر دائماً للمنزلة العشرية الرابعة:</p>
+                <p>إذا كانت 5 أو أكبر ⬆️ زد المنزلة الثالثة بـ 1.</p>
+                <p>إذا كانت أقل من 5 ⬇️ اتركه كما هو.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 10: Negative Exponents e^(-x) -->
+    <div class="slide-body" data-title="تاسعًا: الدالة ذات الأس السالب y = e^(-x)">
+        <div class="grid-2">
+            <div>
+                <p>تكتب الدالة ذات الأس السالب في الصورة: <strong style="font-size: 1.3rem; color: var(--primary);">\(y = e^{-x}\)</strong></p>
+                <div class="highlight-box">
+                    <h4 style="color: var(--primary);">العلاقة الجبرية الهامة:</h4>
+                    <div style="text-align: center; font-size: 1.4rem; color: var(--primary); margin: 10px 0;">
+                        \(e^{-x} = \frac{1}{e^x}\)
+                    </div>
+                    <p>هذه الدالة تمثل <strong>التناقص الأسّي</strong>، حيث تقل قيمة \(y\) كلما زادت قيمة \(x\).</p>
+                </div>
+            </div>
+            <div class="graph-wrapper">
+                <canvas id="graphNegEx" width="380" height="230"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 11: Comparison e^x vs e^(-x) -->
+    <div class="slide-body" data-title="عاشرًا: مقارنة منحنى e^x و e^(-x)">
+        <p>مقارنة شاملة بين الدالتين \(d(x) = e^x\) و \(k(x) = e^{-x}\):</p>
+        <div class="grid-2" style="margin-top: 10px;">
+            <table class="data-table">
+                <thead>
+                    <tr><th>المقارنة</th><th>\(e^x\)</th><th>\(e^{-x}\)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>السلوك</td><td>متزايدة</td><td>متناقصة</td></tr>
+                    <tr><td>المقطع الصادي</td><td>\((0,1)\)</td><td>\((0,1)\)</td></tr>
+                    <tr><td>عند \(x \to \infty\)</td><td>تنمو بسرعة</td><td>تقترب من 0</td></tr>
+                </tbody>
+            </table>
+            <div class="graph-wrapper">
+                <canvas id="graphComp" width="380" height="230"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 12: Intersection Point -->
+    <div class="slide-body" data-title="حادي عشر: نقطة تساوي الدالتين">
+        <div class="grid-2">
+            <div>
+                <div class="highlight-box" style="text-align: center;">
+                    <h4 style="color: var(--primary);">متى تتساوى الدالتان؟</h4>
+                    <p style="font-size: 1.3rem; margin: 15px 0;">\(e^x = e^{-x}\)</p>
+                    <p>بحل المعادلة أو من خلال الرسم البياني، يتقاطع المنحنيان عند نقطة واحدة فقط هي:</p>
+                    <div style="font-size: 1.6rem; color: var(--accent); font-weight: bold; margin-top: 10px;">
+                        \((0, 1)\) ⬅️ أى عندما \(x = 0\)
+                    </div>
+                </div>
+            </div>
+            <div class="highlight-box" style="background: #EFF6FF;">
+                <h4 style="color: var(--primary);">الإثبات الجبري:</h4>
+                <p>\(e^x = \frac{1}{e^x} \implies (e^x)^2 = 1\)</p>
+                <p>\(e^{2x} = e^0 \implies 2x = 0 \implies \mathbf{x = 0}\)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 13: Inequalities e^x vs e^(-x) -->
+    <div class="slide-body" data-title="ثاني عشر: مقارنة المتباينات بين e^x و e^(-x)">
+        <p>دراسة فترات المتباينة بناءً على نقطة التقاطع \(x = 0\):</p>
+
+        <div class="grid-2" style="margin-top: 20px;">
+            <div class="highlight-box" style="background: #FEF2F2; border-color: var(--danger);">
+                <h4 style="color: var(--danger);">الفترة الأولى: عندما \(x < 0\)</h4>
+                <p style="font-size: 1.3rem; font-weight: bold; text-align: center; color: var(--danger); margin-top: 10px;">
+                    \(e^x < e^{-x}\)
+                </p>
+                <p>يكون منحنى \(e^{-x}\) أعلى من منحنى \(e^x\).</p>
+            </div>
+
+            <div class="highlight-box" style="background: #F0FDF4; border-color: var(--accent);">
+                <h4 style="color: var(--accent);">الفترة الثانية: عندما \(x > 0\)</h4>
+                <p style="font-size: 1.3rem; font-weight: bold; text-align: center; color: var(--accent); margin-top: 10px;">
+                    \(e^x > e^{-x}\)
+                </p>
+                <p>يكون منحنى \(e^x\) أعلى من منحنى \(e^{-x}\).</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 14: Geometric Transformation (Reflection) -->
+    <div class="slide-body" data-title="ثالث عشر: التحويل الهندسي (الانعكاس)">
+        <p>الربط بين الدوال والتحويلات الهندسة للمنحنيات:</p>
+        <div class="grid-2" style="margin-top: 15px;">
+            <div class="highlight-box">
+                <h4 style="color: var(--primary);">قاعدة الانعكاس حول محور الصادات:</h4>
+                <p>التحويل من \(y = f(x)\) إلى <strong style="color: var(--danger);">\(y = f(-x)\)</strong> يمثل:</p>
+                <div style="text-align: center; font-size: 1.3rem; color: var(--primary); font-weight: bold; margin: 15px 0;">
+                    انعكاسًا للمنحنى حول محور الصادات (\(y\)-axis)
+                </div>
+                <p style="font-size: 0.95rem; color: var(--text-muted);">
+                    تنعكس كل نقطة \((x, y)\) لتصبح \((-x, y)\).
+                </p>
+            </div>
+            <div class="graph-wrapper">
+                <canvas id="graphReflect" width="380" height="230"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 15: Transformation Summary Diagram -->
+    <div class="slide-body" data-title="رابع عشر: مخطط التحويل الهندسي">
+        <p>ملخص بصري للتحويل الهندسي بين \(e^x\) و \(e^{-x}\):</p>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 30px; margin: 40px 0;">
+            <div style="background: #EFF6FF; border: 2px solid var(--primary-light); padding: 25px; border-radius: 15px; text-align: center;">
+                <h3 style="color: var(--primary);">الدالة الأصلية</h3>
+                <p style="font-size: 1.8rem; font-weight: bold; color: var(--primary); margin-top: 10px;">\(y = e^x\)</p>
+            </div>
+            <div style="font-size: 2rem; color: var(--accent); font-weight: bold;">
+                ⬅️ انعكاس حول محور \(y\) ➡️
+            </div>
+            <div style="background: #FEF2F2; border: 2px solid var(--danger); padding: 25px; border-radius: 15px; text-align: center;">
+                <h3 style="color: var(--danger);">الدالة المنعكسة</h3>
+                <p style="font-size: 1.8rem; font-weight: bold; color: var(--danger); margin-top: 10px;">\(y = e^{-x}\)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 16: Key Rules Summary -->
+    <div class="slide-body" data-title="خامس عشر: أهم القوانين التي يجب حفظها">
+        <div class="grid-2">
+            <div class="highlight-box">
+                <h4 style="color: var(--primary); margin-bottom: 10px;">1️⃣ قيمة الثابت الطبيعي:</h4>
+                <p>\(e \approx 2.71828\)</p>
+                <h4 style="color: var(--primary); margin-bottom: 10px; margin-top: 15px;">2️⃣ قاعدة الأس صفر:</h4>
+                <p>\(e^0 = 1\)</p>
+            </div>
+            <div class="highlight-box">
+                <h4 style="color: var(--primary); margin-bottom: 10px;">3️⃣ قاعدة الأس السالب:</h4>
+                <p>\(e^{-x} = \frac{1}{e^x}\)</p>
+                <h4 style="color: var(--primary); margin-bottom: 10px; margin-top: 15px;">4️⃣ قاعدة التحويل الهندسي:</h4>
+                <p>\(y = f(-x)\) ⬅️ انعكاس حول محور \(y\)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 17: Mind Map -->
+    <div class="slide-body" data-title="سادس عشر: خريطة ذهنية للوحدة">
+        <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 15px; padding: 20px; text-align: center;">
+            <div style="display: inline-block; background: var(--primary); color: white; padding: 10px 25px; border-radius: 20px; font-weight: bold; margin-bottom: 20px;">
+                الأساس الطبيعي \(e\)
+            </div>
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px;">
+                <div style="background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; width: 30%;">
+                    <strong style="color: var(--primary-light);">الدالة \(e^x\)</strong><br><small>نمو أسّي متزايد، تقطع الصادات عند (0,1)</small>
+                </div>
+                <div style="background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; width: 30%;">
+                    <strong style="color: var(--accent);">الدالة \(e^{-x}\)</strong><br><small>تناقص أسّي، انعكاس لـ \(e^x\) حول محور الصادات</small>
+                </div>
+                <div style="background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; width: 30%;">
+                    <strong style="color: var(--danger);">القراءة والتقدير</strong><br><small>استخدام الحاسبة أو إسقاط المحاور البيانية</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 18: What student should master -->
+    <div class="slide-body" data-title="سابع عشر: المهارات الأساسية المستهدفة للطالب">
+        <div class="highlight-box" style="background: #F0FDF4; border-color: var(--accent);">
+            <h4 style="color: var(--accent); margin-bottom: 15px; font-size: 1.2rem;">في نهاية هذا الجزء، يجب أن يكون الطالب قادرًا على:</h4>
+            <ul class="styled-list" style="line-height: 1.8;">
+                <li>حساب قيم \(e^x\) والتقريب لأقرب منازل عشرية مطلوبة باستخدام الحاسبة.</li>
+                <li>رسم وفهم الخصائص الأساسية لمنحنى النمو الأسّي \(y = e^x\).</li>
+                <li>تقدير القراءات والنتائج مباشرة من الرسم البياني بدقة.</li>
+                <li>المقارنة بين منحنى \(e^x\) ومنحنى التناقص \(e^{-x}\) وتحديد نقطة التقاطع.</li>
+                <li>تطبيق قاعدة الانعكاس حول محور الصادات لتحديد التحويلات الهندسية.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Footer Controls -->
+    <div class="footer-nav">
+        <button class="btn" id="prevBtn" onclick="changeSlide(-1)" disabled>السابق</button>
+        <button class="btn" id="nextBtn" onclick="changeSlide(1)">التالي</button>
+    </div>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide-body');
+    const totalSlides = slides.length;
+
+    function updateSlide() {
+        slides.forEach((slide, idx) => {
+            slide.classList.toggle('active', idx === currentSlide);
+        });
+
+        // Update Title and Number
+        const currentTitle = slides[currentSlide].getAttribute('data-title') || "الوحدة الأولى: الأسس واللوغاريتميات الطبيعية";
+        document.getElementById('slideTitle').innerText = currentTitle;
+        document.getElementById('slideNum').innerText = `${currentSlide + 1} / ${totalSlides}`;
+
+        // Update Progress Bar
+        const progress = ((currentSlide + 1) / totalSlides) * 100;
+        document.getElementById('progressBar').style.width = `${progress}%`;
+
+        // Buttons state
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+        // Render Canvas on active slides
+        if (currentSlide === 3) drawGraphEx();
+        if (currentSlide === 6) drawGraph3e2x();
+        if (currentSlide === 9) drawGraphNegEx();
+        if (currentSlide === 10) drawGraphComp();
+        if (currentSlide === 13) drawGraphReflect();
+
+        // Rerender MathJax formulas if needed
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function changeSlide(direction) {
+        currentSlide += direction;
+        if (currentSlide < 0) currentSlide = 0;
+        if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+        updateSlide();
+    }
+
+    // Keyboard Navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') changeSlide(1); // RTL Next
+        if (e.key === 'ArrowRight') changeSlide(-1); // RTL Prev
+    });
+
+    /* --- CANVAS DRAWING FUNCTIONS --- */
+
+    // Helper Grid
+    function drawGrid(ctx, w, h) {
+        ctx.strokeStyle = '#E2E8F0';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < w; x += 30) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        }
+        for (let y = 0; y < h; y += 30) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+        }
+    }
+
+    // Draw Axes
+    function drawAxes(ctx, cx, cy, w, h) {
+        ctx.strokeStyle = '#1E293B';
+        ctx.lineWidth = 2;
+        // X Axis
+        ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+        // Y Axis
+        ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#64748B';
+        ctx.font = '12px Tahoma';
+        ctx.fillText("x", w - 15, cy - 8);
+        ctx.fillText("y", cx + 8, 15);
+    }
+
+    // 1. Graph y = e^x
+    function drawGraphEx() {
+        const canvas = document.getElementById('graphEx');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        const cx = w / 2, cy = h - 40;
+        const scaleX = 60, scaleY = 25;
+
+        ctx.clearRect(0, 0, w, h);
+        drawGrid(ctx, w, h);
+        drawAxes(ctx, cx, cy, w, h);
+
+        // Draw Curve
+        ctx.strokeStyle = '#3B82F6';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let px = -cx; px < cx; px++) {
+            let x = px / scaleX;
+            let y = Math.exp(x);
+            let py = cy - (y * scaleY);
+            if (px === -cx) ctx.moveTo(cx + px, py);
+            else ctx.lineTo(cx + px, py);
+        }
+        ctx.stroke();
+
+        // Point (0,1)
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath();
+        ctx.arc(cx, cy - scaleY, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillText("(0,1)", cx + 8, cy - scaleY);
+
+        // Interactive Slider Point
+        const sliderVal = parseFloat(document.getElementById('sliderX').value);
+        document.getElementById('valX').innerText = `x = ${sliderVal.toFixed(1)}, y = ${Math.exp(sliderVal).toFixed(2)}`;
+
+        let ix = sliderVal * scaleX;
+        let iy = Math.exp(sliderVal) * scaleY;
+        ctx.fillStyle = '#059669';
+        ctx.beginPath();
+        ctx.arc(cx + ix, cy - iy, 6, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    document.getElementById('sliderX')?.addEventListener('input', drawGraphEx);
+
+    // 2. Graph y = 3e^(2x)
+    function drawGraph3e2x() {
+        const canvas = document.getElementById('graph3e2x');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        const cx = 80, cy = h - 30;
+        const scaleX = 120, scaleY = 8;
+
+        ctx.clearRect(0, 0, w, h);
+        drawGrid(ctx, w, h);
+        drawAxes(ctx, cx, cy, w, h);
+
+        ctx.strokeStyle = '#059669';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let px = -cx; px < w - cx; px++) {
+            let x = px / scaleX;
+            let y = 3 * Math.exp(2 * x);
+            let py = cy - (y * scaleY);
+            if (px === -cx) ctx.moveTo(cx + px, py);
+            else ctx.lineTo(cx + px, py);
+        }
+        ctx.stroke();
+
+        // Dotted projection line for x = 0.25
+        let px = 0.25 * scaleX;
+        let py = cy - (3 * Math.exp(0.5) * scaleY);
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = '#DC2626';
+        ctx.beginPath(); ctx.moveTo(cx + px, cy); ctx.lineTo(cx + px, py); ctx.lineTo(cx, py); ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    // 3. Graph y = e^(-x)
+    function drawGraphNegEx() {
+        const canvas = document.getElementById('graphNegEx');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        const cx = w / 2, cy = h - 30;
+        const scaleX = 60, scaleY = 25;
+
+        ctx.clearRect(0, 0, w, h);
+        drawGrid(ctx, w, h);
+        drawAxes(ctx, cx, cy, w, h);
+
+        ctx.strokeStyle = '#DC2626';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let px = -cx; px < cx; px++) {
+            let x = px / scaleX;
+            let y = Math.exp(-x);
+            let py = cy - (y * scaleY);
+            if (px === -cx) ctx.moveTo(cx + px, py);
+            else ctx.lineTo(cx + px, py);
+        }
+        ctx.stroke();
+    }
+
+    // 4. Graph Comparison e^x & e^(-x)
+    function drawGraphComp() {
+        const canvas = document.getElementById('graphComp');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        const cx = w / 2, cy = h - 30;
+        const scaleX = 50, scaleY = 25;
+
+        ctx.clearRect(0, 0, w, h);
+        drawGrid(ctx, w, h);
+        drawAxes(ctx, cx, cy, w, h);
+
+        // e^x
+        ctx.strokeStyle = '#3B82F6'; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let px = -cx; px < cx; px++) {
+            let py = cy - (Math.exp(px / scaleX) * scaleY);
+            if (px === -cx) ctx.moveTo(cx + px, py); else ctx.lineTo(cx + px, py);
+        }
+        ctx.stroke();
+
+        // e^-x
+        ctx.strokeStyle = '#DC2626'; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let px = -cx; px < cx; px++) {
+            let py = cy - (Math.exp(-px / scaleX) * scaleY);
+            if (px === -cx) ctx.moveTo(cx + px, py); else ctx.lineTo(cx + px, py);
+        }
+        ctx.stroke();
+
+        // Point (0,1)
+        ctx.fillStyle = '#059669';
+        ctx.beginPath(); ctx.arc(cx, cy - scaleY, 5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // 5. Graph Reflection (Slide 14 specific rendering)
+    function drawGraphReflect() {
+        const canvas = document.getElementById('graphReflect');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        const cx = w / 2, cy = h - 35;
+        const scaleX = 55, scaleY = 25;
+
+        ctx.clearRect(0, 0, w, h);
+        drawGrid(ctx, w, h);
+        drawAxes(ctx, cx, cy, w, h);
+
+        // Draw Original Curve y = e^x (Blue)
+        ctx.strokeStyle = '#3B82F6';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let px = -cx; px < cx; px++) {
+            let py = cy - (Math.exp(px / scaleX) * scaleY);
+            if (px === -cx) ctx.moveTo(cx + px, py); else ctx.lineTo(cx + px, py);
+        }
+        ctx.stroke();
+
+        // Draw Reflected Curve y = e^-x (Red)
+        ctx.strokeStyle = '#DC2626';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let px = -cx; px < cx; px++) {
+            let py = cy - (Math.exp(-px / scaleX) * scaleY);
+            if (px === -cx) ctx.moveTo(cx + px, py); else ctx.lineTo(cx + px, py);
+        }
+        ctx.stroke();
+
+        // Horizontal Reflection Arrow Indications
+        ctx.strokeStyle = '#059669';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 3]);
+
+        // Draw dashed reflection arrow lines at y = 2
+        let yVal = 2;
+        let px1 = Math.log(yVal) * scaleX;
+        let py = cy - (yVal * scaleY);
+
+        ctx.beginPath();
+        ctx.moveTo(cx + px1, py);
+        ctx.lineTo(cx - px1, py);
+        ctx.stroke();
+
+        ctx.fillStyle = '#059669';
+        ctx.beginPath(); ctx.arc(cx + px1, py, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx - px1, py, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.setLineDash([]);
+
+        // Labels
+        ctx.fillStyle = '#3B82F6';
+        ctx.font = 'bold 12px Tahoma';
+        ctx.fillText("y = e^x", cx + 50, cy - 80);
+
+        ctx.fillStyle = '#DC2626';
+        ctx.fillText("y = e^-x", cx - 110, cy - 80);
+    }
+
+    // Initialize Slide
+    updateSlide();
+</script>
+</body>
+</html>

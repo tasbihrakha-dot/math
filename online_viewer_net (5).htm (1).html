@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بنك الأسئلة - الأسس واللوغاريتمات الطبيعية</title>
+    <style>
+        :root {
+            --primary-color: #0d5c46;
+            --secondary-color: #13795b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --correct-color: #27ae60;
+            --incorrect-color: #e74c3c;
+            --accent-color: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-card h1 { margin: 5px 0; font-size: 24px; }
+        .header-card h2 { margin: 5px 0; font-size: 18px; font-weight: 400; opacity: 0.9; }
+        .header-card p { margin: 5px 0; font-size: 14px; opacity: 0.8; }
+
+        .score-board {
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 25px;
+            border: 2px solid var(--primary-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .score-item {
+            text-align: center;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .score-item .num {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .score-item .label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .section-title {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 18px;
+            margin: 25px 0 15px 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #e1e8ed;
+        }
+
+        .card-header {
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .img-container {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .img-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .question-text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+
+        .option-btn {
+            background-color: #f8f9fa;
+            border: 1.5px solid #ced4da;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: right;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            background-color: #e9ecef;
+            border-color: var(--primary-color);
+        }
+
+        .option-btn.correct {
+            background-color: #d4edda !important;
+            border-color: var(--correct-color) !important;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .option-btn.incorrect {
+            background-color: #f8d7da !important;
+            border-color: var(--incorrect-color) !important;
+            color: #721c24;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .tip-box {
+            background-color: #e8f4f8;
+            border-right: 4px solid #3498db;
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 13.5px;
+        }
+
+        .final-results {
+            text-align: center;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .btn-reset {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            margin-top: 15px;
+        }
+
+        .btn-reset:hover { background-color: var(--secondary-color); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-card">
+        <p>QUESTION BANK</p>
+        <h1>بنك الأسئلة: الأسس واللوغاريتمات الطبيعية</h1>
+        <h2>الرياضيات الأساسية للصف الثاني عشر – الفصل الدراسي الأول</h2>
+        <p>الوحدة الأولى | الدرس 1-1</p>
+    </div>
+
+    <!-- لوحة النتيجة السريعة -->
+    <div class="score-board">
+        <div class="score-item">
+            <div class="num" id="answered-count">0 / 22</div>
+            <div class="label">المجاب عنها</div>
+        </div>
+        <div class="score-item">
+            <div class="num" id="correct-count" style="color: var(--correct-color);">0</div>
+            <div class="label">إجابات صحيحة</div>
+        </div>
+        <div class="score-item">
+            <div class="num" id="incorrect-count" style="color: var(--incorrect-color);">0</div>
+            <div class="label">إجابات خاطئة</div>
+        </div>
+        <div class="score-item">
+            <div class="num" id="percentage">0%</div>
+            <div class="label">النسبة المئوية</div>
+        </div>
+    </div>
+
+    <!-- نظرة عامة -->
+    <div class="card">
+        <div class="card-header">نظرة عامة على بنك الأسئلة</div>
+        <p class="question-text">
+            يقدم هذا البنك مجموعة منظمة من الأسئلة حول الدالة الأسية الطبيعية هـ<sup>س</sup> ومنحنياتها، مأخوذة بالكامل من محتوى الوحدة الأولى دون أي تغيير في الأسئلة أو القيم أو الإجابات مع إعادة تصميم الإخراج ليكون أكثر وضوحًا وسهولة في الاستخدام والمراجعة.
+        </p>
+    </div>
+
+    <!-- القسم الأول -->
+    <div class="section-title">القسم الأول - المثال المحلول (SOLVED EXAMPLE)</div>
+    
+    <div class="card">
+        <div class="card-header">مثال ٤ : استخدام المنحنى البياني لتقدير قيم الدالة الأسية</div>
+        <p class="question-text">مثال: استخدم منحنى ص = د(س) حيث ص = ٣هـ<sup>٢س</sup> لتقدير قيمة:</p>
+        <div class="img-container">
+            <!-- الرسم البياني للمثال 4 -->
+            <svg viewBox="0 0 500 260" width="100%" height="auto" style="background:#fff; max-width:450px;">
+                <defs>
+                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#eee" stroke-width="1"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+                <line x1="50" y1="230" x2="450" y2="230" stroke="#000" stroke-width="2" />
+                <line x1="70" y1="10" x2="70" y2="250" stroke="#000" stroke-width="2" />
+                <text x="460" y="235" font-size="12">س</text>
+                <text x="65" y="15" font-size="12">ص</text>
+                
+                <!-- Axis labels -->
+                <text x="65" y="245" font-size="10">0</text>
+                <text x="110" y="245" font-size="10">0.2</text>
+                <text x="120" y="245" font-size="10">0.25</text>
+                <text x="190" y="245" font-size="10">0.6</text>
+                <text x="330" y="245" font-size="10">0.95</text>
+                <text x="350" y="245" font-size="10">1</text>
+                
+                <text x="45" y="200" font-size="10">5</text>
+                <text x="45" y="150" font-size="10">10</text>
+                <text x="45" y="100" font-size="10">15</text>
+                <text x="45" y="50" font-size="10">20</text>
+                
+                <!-- Curve -->
+                <path d="M 50 220 Q 200 210 400 30" fill="none" stroke="#0d5c46" stroke-width="2.5" />
+                <text x="350" y="45" font-size="12" fill="#0d5c46">ص = ٣هـ<sup>٢س</sup></text>
+                
+                <!-- Dotted lines -->
+                <path d="M 120 230 L 120 200 L 45 200" fill="none" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="3,3" />
+                <path d="M 190 230 L 190 150 L 45 150" fill="none" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="3,3" />
+                <path d="M 330 230 L 330 50 L 45 50" fill="none" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="3,3" />
+            </svg>
+        </div>
+
+        <!-- Ex 1 -->
+        <div class="q-block" data-id="q1" data-correct="0">
+            <p><strong>أ)</strong> ٣هـ<sup>٢س</sup> عندما س = ٠,٢٥ :</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q1', 0, this)">٥</button>
+                <button class="option-btn" onclick="checkAnswer('q1', 1, this)">١٠</button>
+                <button class="option-btn" onclick="checkAnswer('q1', 2, this)">٢٠</button>
+                <button class="option-btn" onclick="checkAnswer('q1', 3, this)">٢,٥</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <!-- Ex 2 -->
+        <div class="q-block" data-id="q2" data-correct="1" style="margin-top: 15px;">
+            <p><strong>ب)</strong> س عندما تكون ٣هـ<sup>٢س</sup> = ٢٠ :</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q2', 0, this)">٠,٦</button>
+                <button class="option-btn" onclick="checkAnswer('q2', 1, this)">٠,٩٥</button>
+                <button class="option-btn" onclick="checkAnswer('q2', 2, this)">٠,٢٥</button>
+                <button class="option-btn" onclick="checkAnswer('q2', 3, this)">١</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <!-- Ex 3 -->
+        <div class="q-block" data-id="q3" data-correct="2" style="margin-top: 15px;">
+            <p><strong>جـ)</strong> د(٠,٦) :</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q3', 0, this)">٥</button>
+                <button class="option-btn" onclick="checkAnswer('q3', 1, this)">١٥</button>
+                <button class="option-btn" onclick="checkAnswer('q3', 2, this)">١٠</button>
+                <button class="option-btn" onclick="checkAnswer('q3', 3, this)">٢٠</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+    </div>
+
+    <!-- القسم الثاني -->
+    <div class="section-title">القسم الثاني - تمارين ١-١ (EXERCISE SET 1-1)</div>
+
+    <!-- Q1 -->
+    <div class="card">
+        <div class="card-header">(١) استخدم الحاسبة لإيجاد القيم الآتية مقربًا الناتج إلى أقرب ثلاث منازل عشرية:</div>
+        
+        <div class="q-block" data-id="q4" data-correct="0">
+            <p><strong>أ)</strong> هـ<sup>٦</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q4', 0, this)">٤٠٣,٤٢٩</button>
+                <button class="option-btn" onclick="checkAnswer('q4', 1, this)">٢,٧١٨</button>
+                <button class="option-btn" onclick="checkAnswer('q4', 2, this)">١٤٨,٤١٣</button>
+                <button class="option-btn" onclick="checkAnswer('q4', 3, this)">٤٠٣,٤٣٠</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q5" data-correct="1" style="margin-top: 15px;">
+            <p><strong>ب)</strong> هـ<sup>٢,٧</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q5', 0, this)">١٤,٨٨٠</button>
+                <button class="option-btn" onclick="checkAnswer('q5', 1, this)">١٤,٨٨٠</button>
+                <button class="option-btn" onclick="checkAnswer('q5', 2, this)">١٤,٨٧٩</button>
+                <button class="option-btn" onclick="checkAnswer('q5', 3, this)">٢,٧١٨</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q6" data-correct="2" style="margin-top: 15px;">
+            <p><strong>جـ)</strong> هـ<sup>٠,٩</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q6', 0, this)">٢,٤٥٠</button>
+                <button class="option-btn" onclick="checkAnswer('q6', 1, this)">٢,٤٦٠</button>
+                <button class="option-btn" onclick="checkAnswer('q6', 2, this)">٢,٤٦٠</button>
+                <button class="option-btn" onclick="checkAnswer('q6', 3, this)">٠,٩٠٠</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q7" data-correct="0" style="margin-top: 15px;">
+            <p><strong>د)</strong> هـ<sup>١,٢٥</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q7', 0, this)">٣,٤٩٠</button>
+                <button class="option-btn" onclick="checkAnswer('q7', 1, this)">٣,٤٩١</button>
+                <button class="option-btn" onclick="checkAnswer('q7', 2, this)">٣,٤٨٩</button>
+                <button class="option-btn" onclick="checkAnswer('q7', 3, this)">١,٢٥٠</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="card">
+        <div class="card-header">(٢) استخدم الحاسبة لإيجاد القيم الآتية مقربًا الناتج إلى أقرب ثلاث منازل عشرية:</div>
+        
+        <div class="q-block" data-id="q8" data-correct="1">
+            <p><strong>أ)</strong> هـ<sup>-١,٥</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q8', 0, this)">-٠,٢٢٣</button>
+                <button class="option-btn" onclick="checkAnswer('q8', 1, this)">٠,٢٢٣</button>
+                <button class="option-btn" onclick="checkAnswer('q8', 2, this)">٠,٢٢٤</button>
+                <button class="option-btn" onclick="checkAnswer('q8', 3, this)">٤,٤٨٢</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q9" data-correct="0" style="margin-top: 15px;">
+            <p><strong>ب)</strong> هـ<sup>-٣,٥</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q9', 0, this)">٠,٠٣٠</button>
+                <button class="option-btn" onclick="checkAnswer('q9', 1, this)">٠,٠٣١</button>
+                <button class="option-btn" onclick="checkAnswer('q9', 2, this)">-٠,٠٣٠</button>
+                <button class="option-btn" onclick="checkAnswer('q9', 3, this)">٣٣,١١٥</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q10" data-correct="2" style="margin-top: 15px;">
+            <p><strong>جـ)</strong> هـ<sup>-٠,٤</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q10', 0, this)">-٠,٦٧٠</button>
+                <button class="option-btn" onclick="checkAnswer('q10', 1, this)">٠,٦٧١</button>
+                <button class="option-btn" onclick="checkAnswer('q10', 2, this)">٠,٦٧٠</button>
+                <button class="option-btn" onclick="checkAnswer('q10', 3, this)">١,٤٩٢</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="card">
+        <div class="card-header">(٣) استخدم الحاسبة لإيجاد القيم الآتية مقربًا الناتج إلى أقرب ثلاث منازل عشرية:</div>
+        
+        <div class="q-block" data-id="q11" data-correct="0">
+            <p><strong>أ)</strong> ٥هـ<sup>٣</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q11', 0, this)">١٠٠,٤٢٨</button>
+                <button class="option-btn" onclick="checkAnswer('q11', 1, this)">١٠٠,٤٢٧</button>
+                <button class="option-btn" onclick="checkAnswer('q11', 2, this)">٢٠,٠٨٦</button>
+                <button class="option-btn" onclick="checkAnswer('q11', 3, this)">١٥,٠٠٠</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q12" data-correct="3" style="margin-top: 15px;">
+            <p><strong>ب)</strong> ٤هـ<sup>-٢</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q12', 0, this)">-٠,٥٤١</button>
+                <button class="option-btn" onclick="checkAnswer('q12', 1, this)">٠,٥٤٢</button>
+                <button class="option-btn" onclick="checkAnswer('q12', 2, this)">٢٩,٥٥٦</button>
+                <button class="option-btn" onclick="checkAnswer('q12', 3, this)">٠,٥٤١</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q13" data-correct="1" style="margin-top: 15px;">
+            <p><strong>جـ)</strong> ١ / (٢هـ<sup>٤</sup>)</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q13', 0, this)">٠,٠١٨</button>
+                <button class="option-btn" onclick="checkAnswer('q13', 1, this)">٠,٠٠٩</button>
+                <button class="option-btn" onclick="checkAnswer('q13', 2, this)">٢٧,٢٩٩</button>
+                <button class="option-btn" onclick="checkAnswer('q13', 3, this)">٠,٠١٠</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q14" data-correct="2" style="margin-top: 15px;">
+            <p><strong>د)</strong> (هـ<sup>٢</sup> - هـ<sup>-٢</sup>) / ٤</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q14', 0, this)">١,٨٤٨</button>
+                <button class="option-btn" onclick="checkAnswer('q14', 1, this)">١,٩١٣</button>
+                <button class="option-btn" onclick="checkAnswer('q14', 2, this)">١,٨١٣</button>
+                <button class="option-btn" onclick="checkAnswer('q14', 3, this)">٧,٢٥٤</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="tip-box">
+            <strong>نصيحة:</strong> استخدم مفتاح <code>e<sup>x</sup></code> في الآلة الحاسبة مباشرة، وانتبه لإشارة الأس (موجب أو سالب) قبل القراءة.
+        </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="card">
+        <div class="card-header">(٤) يبين التمثيل البياني أدناه منحنى الدالة د(س) = هـ<sup>س</sup> في الفترة -٢ ≤ س ≤ ٢,٥</div>
+        
+        <div class="img-container">
+            <svg viewBox="0 0 500 250" width="100%" height="auto" style="background:#fff; max-width:450px;">
+                <defs>
+                    <pattern id="grid4" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#eee" stroke-width="1"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid4)" />
+                <line x1="30" y1="210" x2="470" y2="210" stroke="#000" stroke-width="2" />
+                <line x1="180" y1="10" x2="180" y2="230" stroke="#000" stroke-width="2" />
+                <text x="480" y="215" font-size="12">س</text>
+                <text x="175" y="15" font-size="12">ص</text>
+                
+                <!-- Curve -->
+                <path d="M 40 205 Q 220 200 440 20" fill="none" stroke="#e74c3c" stroke-width="2.5" />
+                <text x="380" y="30" font-size="12" fill="#e74c3c">ص = هـ<sup>س</sup></text>
+            </svg>
+        </div>
+
+        <p><strong>أ) استخدم التمثيل البياني لتقدير القيم الآتية مقربة إلى أقرب منزلة عشرية واحدة:</strong></p>
+        
+        <div class="q-block" data-id="q15" data-correct="0">
+            <p>١) د(٢,٣)</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q15', 0, this)">١٠,٠</button>
+                <button class="option-btn" onclick="checkAnswer('q15', 1, this)">٩,٥</button>
+                <button class="option-btn" onclick="checkAnswer('q15', 2, this)">١٠,٥</button>
+                <button class="option-btn" onclick="checkAnswer('q15', 3, this)">١٢,٠</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q16" data-correct="1" style="margin-top: 15px;">
+            <p>٢) د(١,٧)</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q16', 0, this)">٥,٠</button>
+                <button class="option-btn" onclick="checkAnswer('q16', 1, this)">٥,٥</button>
+                <button class="option-btn" onclick="checkAnswer('q16', 2, this)">٦,٠</button>
+                <button class="option-btn" onclick="checkAnswer('q16', 3, this)">٥,٢</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q17" data-correct="2" style="margin-top: 15px;">
+            <p>٣) د(-٠,٦)</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q17', 0, this)">٠,٣</button>
+                <button class="option-btn" onclick="checkAnswer('q17', 1, this)">٠,٨</button>
+                <button class="option-btn" onclick="checkAnswer('q17', 2, this)">٠,٥</button>
+                <button class="option-btn" onclick="checkAnswer('q17', 3, this)">٠,٦</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <p style="margin-top: 20px;"><strong>ب) استخدم التمثيل البياني لتقدير قيمة س، مقربة إلى أقرب منزلة عشرية واحدة، حيث:</strong></p>
+
+        <div class="q-block" data-id="q18" data-correct="0">
+            <p>١) هـ<sup>س</sup> = ٤</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q18', 0, this)">١,٤</button>
+                <button class="option-btn" onclick="checkAnswer('q18', 1, this)">١,٣</button>
+                <button class="option-btn" onclick="checkAnswer('q18', 2, this)">١,٥</button>
+                <button class="option-btn" onclick="checkAnswer('q18', 3, this)">١,٦</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q19" data-correct="1" style="margin-top: 15px;">
+            <p>٢) د(س) = ٥,٦</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q19', 0, this)">١,٦</button>
+                <button class="option-btn" onclick="checkAnswer('q19', 1, this)">١,٧</button>
+                <button class="option-btn" onclick="checkAnswer('q19', 2, this)">١,٨</button>
+                <button class="option-btn" onclick="checkAnswer('q19', 3, this)">١,٥</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q20" data-correct="3" style="margin-top: 15px;">
+            <p>٣) د(س) = ٠,٦</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q20', 0, this)">-٠,٦</button>
+                <button class="option-btn" onclick="checkAnswer('q20', 1, this)">-٠,٤</button>
+                <button class="option-btn" onclick="checkAnswer('q20', 2, this)">-٠,٣</button>
+                <button class="option-btn" onclick="checkAnswer('q20', 3, this)">-٠,٥</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="tip-box">
+            <strong>نصيحة:</strong> للقراءة البيانية لتقدير د(س)، ارسم خطًا رأسيًا من قيمة س المعطاة حتى يلامس المنحنى، ثم خطًا أفقياً حتى المحور الصادي. ولإيجاد س اعكس الترتيب.
+        </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="card">
+        <div class="card-header">(٥) استخدم القيم التقريبية هـ<sup>١,٢</sup> = ٣,٣٢ ، هـ<sup>٢,٤</sup> = ١١ ، هـ<sup>٧,٢</sup> = ١٣٣٩، لتقدير القيم الآتية مقربة إلى أقرب عدد صحيح:</div>
+        
+        <div class="q-block" data-id="q21" data-correct="0">
+            <p><strong>أ)</strong> هـ<sup>٩,٦</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q21', 0, this)">١٤٧٢٩</button>
+                <button class="option-btn" onclick="checkAnswer('q21', 1, this)">١٣٥٠</button>
+                <button class="option-btn" onclick="checkAnswer('q21', 2, this)">٤٤٤٥</button>
+                <button class="option-btn" onclick="checkAnswer('q21', 3, this)">١٤٧٣</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q22" data-correct="1" style="margin-top: 15px;">
+            <p><strong>ب)</strong> هـ<sup>٦</sup></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q22', 0, this)">٤٠٣</button>
+                <button class="option-btn" onclick="checkAnswer('q22', 1, this)">٤٠٣</button>
+                <button class="option-btn" onclick="checkAnswer('q22', 2, this)">١٢١</button>
+                <button class="option-btn" onclick="checkAnswer('q22', 3, this)">٣٦</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q23" data-correct="2" style="margin-top: 15px;">
+            <p><strong>جـ ★)</strong> √١٣٣٩</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q23', 0, this)">٣٦</button>
+                <button class="option-btn" onclick="checkAnswer('q23', 1, this)">٣,٣٢</button>
+                <button class="option-btn" onclick="checkAnswer('q23', 2, this)">٣٧</button>
+                <button class="option-btn" onclick="checkAnswer('q23', 3, this)">١١</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="tip-box">
+            <strong>★ سؤال إثرائي:</strong> يتطلب الجزء المميز بالنجمة تحويلاً إضافياً قبل استخدام القيم التقريبية المعطاة. وّظف قوانين الأسس قبل التعويض.
+        </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="card">
+        <div class="card-header">(٦) يبين التمثيل البياني أدناه منحنى كل من الدالة د(س) = هـ<sup>س</sup> والدالة ك(س) = هـ<sup>-س</sup> في الفترة -٢ ≤ س ≤ ٢,٥</div>
+        
+        <div class="img-container">
+            <svg viewBox="0 0 500 250" width="100%" height="auto" style="background:#fff; max-width:450px;">
+                <defs>
+                    <pattern id="grid6" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#eee" stroke-width="1"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid6)" />
+                <line x1="30" y1="210" x2="470" y2="210" stroke="#000" stroke-width="2" />
+                <line x1="230" y1="10" x2="230" y2="230" stroke="#000" stroke-width="2" />
+                
+                <!-- Curves -->
+                <path d="M 40 205 Q 230 190 420 30" fill="none" stroke="#0d5c46" stroke-width="2.5" />
+                <path d="M 40 30 Q 230 190 420 205" fill="none" stroke="#e74c3c" stroke-width="2.5" />
+                
+                <text x="360" y="40" font-size="11" fill="#0d5c46">د(س)=هـ<sup>س</sup></text>
+                <text x="50" y="40" font-size="11" fill="#e74c3c">ك(س)=هـ<sup>-س</sup></text>
+            </svg>
+        </div>
+
+        <div class="q-block" data-id="q24" data-correct="0">
+            <p><strong>أ)</strong> أوجد قيمة س بحيث تكون القيمتان هـ<sup>س</sup> ، هـ<sup>-س</sup> متساويتين:</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q24', 0, this)">س = ٠</button>
+                <button class="option-btn" onclick="checkAnswer('q24', 1, this)">س = ١</button>
+                <button class="option-btn" onclick="checkAnswer('q24', 2, this)">س = -١</button>
+                <button class="option-btn" onclick="checkAnswer('q24', 3, this)">س = ٠,٥</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q25" data-correct="1" style="margin-top: 15px;">
+            <p><strong>ب) ١)</strong> المتباينة التي تعبر عن قيم س التي تحقق د(س) > ك(س):</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q25', 0, this)">س < ٠</button>
+                <button class="option-btn" onclick="checkAnswer('q25', 1, this)">س > ٠</button>
+                <button class="option-btn" onclick="checkAnswer('q25', 2, this)">س = ٠</button>
+                <button class="option-btn" onclick="checkAnswer('q25', 3, this)">س ≥ ١</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q26" data-correct="0" style="margin-top: 15px;">
+            <p><strong>ب) ٢)</strong> المتباينة التي تعبر عن قيم س التي تحقق د(س) < ك(س):</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q26', 0, this)">س < ٠</button>
+                <button class="option-btn" onclick="checkAnswer('q26', 1, this)">س > ٠</button>
+                <button class="option-btn" onclick="checkAnswer('q26', 2, this)">س ≤ -١</button>
+                <button class="option-btn" onclick="checkAnswer('q26', 3, this)">س = ٠</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="q-block" data-id="q27" data-correct="2" style="margin-top: 15px;">
+            <p><strong>جـ)</strong> الصفة المختصرة للتحويل الوحيد الذي يحوّل ص = هـ<sup>-س</sup> إلى ص = هـ<sup>س</sup>:</p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('q27', 0, this)">انعكاس حول المحور السيني</button>
+                <button class="option-btn" onclick="checkAnswer('q27', 1, this)">انسحاب بمقدار وحدة واحدة</button>
+                <button class="option-btn" onclick="checkAnswer('q27', 2, this)">انعكاس حول المحور الصادي</button>
+                <button class="option-btn" onclick="checkAnswer('q27', 3, this)">دوران حول نقطة الأصل</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="tip-box">
+            <strong>نصيحة:</strong> منحنى هـ<sup>-س</sup> هو انعكاس منحنى هـ<sup>س</sup> حول المحور الصادي، وتتقاطع الدالتان دائماً عند النقطة (٠، ١).
+        </div>
+    </div>
+
+    <!-- المجموع النهائي -->
+    <div class="final-results" id="final-results">
+        <h2>نهاية بنك الأسئلة</h2>
+        <p>تمت مراجعة جميع الأسئلة لضمان مطابقتها الكاملة لمحتوى الملف الأصلي دون حذف أو تغيير.</p>
+        <div id="final-score-text" style="font-size: 18px; font-weight: bold; margin: 15px 0;"></div>
+        <button class="btn-reset" onclick="resetQuiz()">إعادة المحاولة</button>
+    </div>
+</div>
+
+<script>
+    const totalQuestions = 24;
+    let answeredCount = 0;
+    let correctCount = 0;
+    let incorrectCount = 0;
+    const answeredMap = {};
+
+    function checkAnswer(questionId, selectedIndex, btn) {
+        if (answeredMap[questionId]) return; // منع التكرار نفس السؤال
+
+        const parent = btn.closest('.q-block');
+        const correctIndex = parseInt(parent.getAttribute('data-correct'));
+        const buttons = parent.querySelectorAll('.option-btn');
+        const feedback = parent.querySelector('.feedback');
+
+        // تعطيل الأزرار للسؤال
+        buttons.forEach(b => b.disabled = true);
+
+        answeredMap[questionId] = true;
+        answeredCount++;
+
+        if (selectedIndex === correctIndex) {
+            btn.classList.add('correct');
+            feedback.textContent = '✓ إجابة صحيحة!';
+            feedback.className = 'feedback correct';
+            correctCount++;
+        } else {
+            btn.classList.add('incorrect');
+            buttons[correctIndex].classList.add('correct');
+            feedback.textContent = '✕ إجابة خاطئة. الإجابة الصحيحة هي: ' + buttons[correctIndex].textContent;
+            feedback.className = 'feedback incorrect';
+            incorrectCount++;
+        }
+
+        updateScoreBoard();
+    }
+
+    function updateScoreBoard() {
+        document.getElementById('answered-count').textContent = answeredCount + ' / ' + totalQuestions;
+        document.getElementById('correct-count').textContent = correctCount;
+        document.getElementById('incorrect-count').textContent = incorrectCount;
+        
+        const pct = Math.round((correctCount / totalQuestions) * 100);
+        document.getElementById('percentage').textContent = pct + '%';
+
+        if (answeredCount === totalQuestions) {
+            document.getElementById('final-score-text').textContent = 
+                `لقد أكملت جميع الأسئلة! درجتك النهائية هي ${correctCount} من ${totalQuestions} (${pct}%)`;
+        }
+    }
+
+    function resetQuiz() {
+        answeredCount = 0;
+        correctCount = 0;
+        incorrectCount = 0;
+        for (let key in answeredMap) delete answeredMap[key];
+
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(b => {
+            b.disabled = false;
+            b.classList.remove('correct', 'incorrect');
+        });
+
+        const feedbacks = document.querySelectorAll('.feedback');
+        feedbacks.forEach(f => {
+            f.style.display = 'none';
+            f.textContent = '';
+        });
+
+        document.getElementById('final-score-text').textContent = '';
+        updateScoreBoard();
+    }
+</script>
+
+</body>
+</html>
